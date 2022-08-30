@@ -10,91 +10,97 @@ class Viru {
 		this.y = y;
 	}
 }
+
+
 public class Main {
 	
-	static int answer = Integer.MAX_VALUE, count;
-	static int n, m;
+	static int n, m, answer = Integer.MAX_VALUE, emptySpace = 0;
 	static int[] dx = {-1,0,1,0};
 	static int[] dy = {0,-1,0,1};
-	static int[][] arr;
-	static boolean[][] visited;
-	static ArrayList<Viru> list = new ArrayList<>();
+	static int[][] map;
 	static int[] comb;
+	static ArrayList<Viru> list = new ArrayList<>();
 	
 	public void comb(int level, int s) {
 		if(level == m) {
-			spread();
+			BFS();
+			return;
 		} else {
 			for(int i = s; i < list.size(); i++) {
 				comb[level] = i;
-				comb(level+1,i+1);
+				comb(level+1, i+1);
 			}
 		}
 	}
 	
-	public void spread() {
-		int emptySpace = count;
-		Queue<Viru> q= new LinkedList<>();
-		visited = new boolean[n][n];
+	public void BFS() {
+		int count = emptySpace;
+		Queue<Viru> q = new LinkedList<>();
 		int[][] copy = new int[n][n];
+		boolean[][] visited = new boolean[n][n];
 		
-		for(int i = 0; i < m; i++ ) {
-			Viru v = list.get(comb[i]);
+		for(int i : comb) {
+			Viru v = list.get(i);
 			q.add(v);
 			visited[v.x][v.y] = true;
 		}
-		for(int i = 0; i < n; i++ ) {
+		
+		for(int i = 0; i < n; i++) {
 			for(int j = 0; j < n; j++) {
-			
-				if(arr[i][j] == 2 && !visited[i][j]) {
-					copy[i][j] = -2;
-				}
-				if(arr[i][j] == 1)  {
+				copy[i][j] = map[i][j];
+				if(copy[i][j] == 1) {
 					copy[i][j] = -1;
 				}
+				if(copy[i][j] == 2 && !visited[i][j]) {
+					copy[i][j] = -2;
+				} else if(copy[i][j] == 2){
+					copy[i][j] = 0;
+				}
 			}
-		}	
-		
+		}
 		
 		while(!q.isEmpty()) {
-			Viru now = q.poll();
+			Viru v = q.poll();
 			for(int i = 0; i < 4; i++) {
-				int nx = now.x +dx[i];
-				int ny = now.y +dy[i];
-				if(nx >= 0 && nx < n && ny >= 0 && ny < n && copy[nx][ny] == 0 && !visited[nx][ny]) {
-					emptySpace--;
-					visited[nx][ny] = true;
-					copy[nx][ny] = copy[now.x][now.y] + 1;
-					q.add(new Viru(nx,ny));
+				int nx = v.x +dx[i];
+				int ny = v.y + dy[i];
+				
+				if(nx < 0 || nx >= n || ny < 0 || ny >= n) {
+					continue;
 				}
 				
-				if(nx >= 0 && nx < n && ny >= 0 && ny < n && copy[nx][ny] == -2 && !visited[nx][ny]) {
+				if(copy[nx][ny] == 0 && !visited[nx][ny]) {
+					count--;
 					visited[nx][ny] = true;
-					copy[nx][ny] = copy[now.x][now.y] + 1;
+					copy[nx][ny] = copy[v.x][v.y] + 1;
+					q.add(new Viru(nx,ny));
+				}
+				if(copy[nx][ny] == -2) {
+					copy[nx][ny] = copy[v.x][v.y] + 1;
 					q.add(new Viru(nx,ny));
 				}
 			}
-			if(emptySpace == 0) {
+			
+			if(count == 0) {
 				break;
 			}
 		}
 		
-		minTime(copy);
+		minTime(copy,visited);	 
 		
 	}
 	
-	public void minTime(int[][] copy) {
-		int time =0;
+	public void minTime(int[][] copy, boolean[][] visited) {
+		int time = 0;
 		for(int i = 0; i < n; i++) {
-			for(int j =0; j< n; j++) {
+			for(int j = 0; j < n; j++) {
 				if(copy[i][j] == 0 && !visited[i][j]) {
-					 time= Integer.MAX_VALUE;
-					 break;
+					time = Integer.MAX_VALUE;
 				}
 				time = Math.max(time, copy[i][j]);
 			}
 		}
-		answer = Math.min(time, answer);
+		answer = Math.min(answer, time);
 	}
 	
 	public static void main(String[] args) throws Exception{
@@ -103,33 +109,34 @@ public class Main {
 		StringTokenizer st = new StringTokenizer(br.readLine());
 		n = Integer.parseInt(st.nextToken());
 		m = Integer.parseInt(st.nextToken());
-		arr = new int[n][n];
+		
+		map = new int[n][n];
 		comb = new int[m];
 		
 		for(int i = 0; i < n; i++) {
 			st = new StringTokenizer(br.readLine());
 			for(int j = 0; j < n; j++) {
-				arr[i][j] = Integer.parseInt(st.nextToken());
-				if(arr[i][j] == 0) {
-					count++;
-				}
-				
-				if(arr[i][j] == 2) {
+				map[i][j] = Integer.parseInt(st.nextToken());
+				if(map[i][j] == 2) {
 					list.add(new Viru(i,j));
 				}
-			}
-		}
-		if(count == 0) {
-			System.out.println(0);
-		} else {
-			M.comb(0,0);		
-			if(answer == Integer.MAX_VALUE) {
-				System.out.println(-1);
-			} else {
-				System.out.println(answer);	
+				if(map[i][j] == 0) {
+					emptySpace++;
+				}
 			}
 		}
 		
+		if(emptySpace == 0) {
+			System.out.println(0);
+		} else {
+			M.comb(0,0);
+			if(answer == Integer.MAX_VALUE) {
+				System.out.println(-1);
+			} else {
+				System.out.println(answer);			
+			}
+			
+		}
 	}
 	
 }
