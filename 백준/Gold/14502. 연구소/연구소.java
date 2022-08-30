@@ -11,74 +11,74 @@ class Viru {
 	}
 }
 
+
 public class Main {
 	
-	static int n, m, answer = Integer.MIN_VALUE;
-	static int[][] arr;
+	static int n, m, answer =Integer.MIN_VALUE;
 	static int[] dx = {-1,0,1,0};
 	static int[] dy = {0,-1,0,1};
+	static int[][] map;
 	
 	public void DFS(int wall) {
 		if(wall == 3) {
-			spread();
+			BFS();
 			return;
 		}
 		
 		for(int i = 0; i < n; i++) {
 			for(int j = 0; j < m; j++) {
-				if(arr[i][j] == 0) {
-					arr[i][j] = 1;
+				if(map[i][j] == 0) {
+					map[i][j] = 1;
 					DFS(wall+1);
-					arr[i][j] = 0;
+					map[i][j] = 0;
 				}
 			}
 		}
 	}
 	
-	public void spread() {
-		Queue<Viru> q= new LinkedList<>();
+	public void BFS() {
+		Queue<Viru> q = new LinkedList<>();
 		int[][] copy = new int[n][m];
 		
-		
-		for(int i = 0; i < n; i++) {
+		for(int i = 0; i<n ;i++) {
 			for(int j = 0; j < m; j++) {
-				if(arr[i][j] == 2) {
+				if(map[i][j] == 2) {
 					q.add(new Viru(i,j));
 				}
-				copy[i][j] = arr[i][j];
+				copy[i][j] = map[i][j];
 			}
 		}
 		
-		
 		while(!q.isEmpty()) {
 			Viru now = q.poll();
-			for(int i = 0; i < 4; i++) {
-				int nx = now.x + dx[i];
+			
+			for(int i = 0; i < 4 ;i++) {
+				int nx = now.x +dx[i];
 				int ny = now.y + dy[i];
 				
-				if(nx >= 0 && nx < n && ny >= 0 && ny < m && copy[nx][ny] == 0) {
+				if(nx >= 0 && nx <n && ny >= 0 && ny < m && copy[nx][ny] == 0) {
 					copy[nx][ny] = 2;
 					q.add(new Viru(nx,ny));
 				}
 			}
 		}
 		
-		maxCount(copy);
-		
+		maxSize(copy);
 	}
 	
-	public void maxCount(int[][] copy) {
+	public void maxSize(int[][] copy) {
 		int count = 0;
 		for(int i = 0; i < n; i++) {
-			for(int j= 0; j < m; j++) {
+			for(int j = 0; j < m; j++) {
 				if(copy[i][j] == 0) {
 					count++;
 				}
 			}
 		}
 		
-		answer = Math.max(count, answer);
+		answer = Math.max(answer, count);
 	}
+	
 	
 	public static void main(String[] args) throws Exception{
 		Main M = new Main();
@@ -86,14 +86,16 @@ public class Main {
 		StringTokenizer st = new StringTokenizer(br.readLine());
 		n = Integer.parseInt(st.nextToken());
 		m = Integer.parseInt(st.nextToken());
-		arr = new int[n][m];
 		
-		for(int i = 0;i < n; i++) {
+		map = new int[n][m];
+		
+		for(int i = 0; i < n; i++) {
 			st = new StringTokenizer(br.readLine());
 			for(int j = 0; j < m; j++) {
-				arr[i][j] = Integer.parseInt(st.nextToken());
+				map[i][j] = Integer.parseInt(st.nextToken());
 			}
 		}
+		
 	
 		M.DFS(0);
 		System.out.println(answer);
